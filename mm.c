@@ -50,7 +50,7 @@ team_t team = {
 
 #define MAX(x, y) ((x) > (y)? (x) : (y))
 
-#define PACK(size, alloc) ((size) || (alloc))
+#define PACK(size, alloc) ((size) | (alloc))
 
 #define GET(p) (*(unsigned int *)(p))
 #define PUT(p, val) (*(unsigned int *)(p) = (val))
@@ -63,8 +63,8 @@ team_t team = {
 
 #define NEXT_BLKP(bp) ((char *)(bp) + GET_SIZE(((char *)(bp) - WSIZE)))
 #define PREV_BLKP(bp) ((char *)(bp) - GET_SIZE(((char *)(bp) - DSIZE)))
-static char  *heap_listp;
 
+static char  *heap_listp = NULL;
 static void *coalesce(void *bp);
 static void *extend_heap(size_t words);
 static void *find_fit(size_t asize);
@@ -98,7 +98,8 @@ static void *extend_heap(size_t words)
 
     PUT(HDRP(bp), PACK(size, 0));
     PUT(FTRP(bp), PACK(size, 0));
-    PUT(HDRP(NEXT_BLKP(bp)), PACK(size, 0));
+    PUT(FTRP(bp), PACK(size, 0));
+    PUT(HDRP(NEXT_BLKP(bp)), PACK(0, 1));
 
     return coalesce(bp);
 }
@@ -164,7 +165,7 @@ void mm_free(void *ptr)
   size_t size = GET_SIZE(HDRP(ptr));
 
   PUT(HDRP(ptr), PACK(size, 0));
-  PUT(FTRP(ptr), PACK(size, 0));
+  PUT(FTRP(ptr), PACK(size, 0));;
   coalesce(ptr);
 }
 
